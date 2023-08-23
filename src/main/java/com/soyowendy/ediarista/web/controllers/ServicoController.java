@@ -24,7 +24,16 @@ public class ServicoController {
 	@PostMapping("/cadastrar")
 	public String cadastrar(Servico servico) {
 		servicoRepository.save(servico);
-		return "redirect:/admin/servicos/cadastrar";
+		return "redirect:/admin/servicos";
+	}
+
+	@GetMapping
+	public ModelAndView buscarTodos() {
+		ModelAndView modelAndView = new ModelAndView("admin/servico/lista");
+
+		modelAndView.addObject("servicos", servicoRepository.findAll());
+
+		return modelAndView;
 	}
 
 	@ModelAttribute("icones")
