@@ -87,21 +87,19 @@ public class WebUsuarioService {
 	}
 
 	private void validarCamposUnicos(Usuario usuario) {
-		usuarioRepository.findByEmail(usuario.getEmail()).ifPresent(user -> {
-			if (!user.equals(usuario)) {
-				String mensagem = "Já existe um usuário cadastrado com esse e-mail";
-				FieldError fieldError = new FieldError(
-						usuario.getClass().getName(),
-						"email",
-						usuario.getEmail(),
-						false,
-						null,
-						null,
-						mensagem
-				);
+		if (usuarioRepository.isEmailJaCadastrado(usuario.getEmail(), usuario.getId())) {
+			String mensagem = "Já existe um usuário cadastrado com esse e-mail";
+			FieldError fieldError = new FieldError(
+					usuario.getClass().getName(),
+					"email",
+					usuario.getEmail(),
+					false,
+					null,
+					null,
+					mensagem
+			);
 
-				throw new UsuarioJaCadastradoException(mensagem, fieldError);
-			}
-		});
+			throw new UsuarioJaCadastradoException(mensagem, fieldError);
+		}
 	}
 }
