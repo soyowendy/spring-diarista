@@ -18,13 +18,16 @@ public class SecurityConfig  {
 				auth.requestMatchers("/admin/**").hasAuthority(TipoUsuario.ADMIN.toString());
 				auth.anyRequest().authenticated();
 			})
-			.formLogin(Customizer.withDefaults())
-			.logout((logout) -> logout.logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout", "GET")));
+			.formLogin((form) ->
+					form.loginPage("/admin/login").permitAll().usernameParameter("email").passwordParameter("senha")
+							.defaultSuccessUrl("/admin/servicos"))
+			.logout((logout) ->
+					logout.logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout", "GET")));
 		return http.build();
 	}
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().requestMatchers("/webjar/**");
+		return (web) -> web.ignoring().requestMatchers("/webjars/**");
 	}
 }
