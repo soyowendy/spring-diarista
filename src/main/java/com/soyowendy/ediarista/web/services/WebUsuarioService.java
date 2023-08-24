@@ -10,6 +10,8 @@ import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
 import com.soyowendy.ediarista.web.mappers.WebUsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.FieldError;
 
@@ -19,9 +21,10 @@ import java.util.List;
 public class WebUsuarioService {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
-
 	@Autowired
 	private WebUsuarioMapper mapper;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	public List<Usuario> buscarTodos() {
 		return usuarioRepository.findAll();
@@ -47,6 +50,10 @@ public class WebUsuarioService {
 		}
 
 		Usuario model = mapper.toModel(form);
+
+		String senhaHash = passwordEncoder.encode(model.getSenha());
+
+		model.setSenha(senhaHash);
 		model.setTipoUsuario(TipoUsuario.ADMIN);
 
 		validarCamposUnicos(model);
