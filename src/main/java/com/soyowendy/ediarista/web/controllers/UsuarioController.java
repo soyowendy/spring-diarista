@@ -2,6 +2,7 @@ package com.soyowendy.ediarista.web.controllers;
 
 import com.soyowendy.ediarista.web.dtos.FlashMessageDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
+import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
 import com.soyowendy.ediarista.web.services.WebUsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,34 @@ public class UsuarioController {
 		return "redirect:/admin/usuarios";
 	}
 
+	@GetMapping("/{id}/editar")
+	public ModelAndView editar(@PathVariable Long id) {
+		ModelAndView modelAndView = new ModelAndView("admin/usuario/edicao-form");
+		modelAndView.addObject("edicaoForm", usuarioService.buscarFormPorId(id));
+		return modelAndView;
+	}
+
+	@PostMapping("/{id}/editar")
+	public String editar(@PathVariable Long id,
+	                           @Valid @ModelAttribute("edicaoForm") UsuarioEdicaoFormDTO form,
+	                           BindingResult result,
+	                           RedirectAttributes attrs) {
+		if (result.hasErrors()) {
+			return "admin/usuario/edicao-form";
+		}
+
+		usuarioService.editar(id, form);
+		attrs.addFlashAttribute("alert", new FlashMessageDTO("alert-success", "Usuário editado com sucesso!"));
+
+		return "redirect:/admin/usuarios";
+	}
+
 	@GetMapping("/{id}/excluir")
 	public String excluir(@PathVariable Long id, RedirectAttributes attrs) {
 		usuarioService.excluirPorId(id);
 		attrs.addFlashAttribute("alert", new FlashMessageDTO("alert-success", "Usuário excluído com sucesso"));
 		return "redirect:/admin/usuarios";
 	}
+
+
 }

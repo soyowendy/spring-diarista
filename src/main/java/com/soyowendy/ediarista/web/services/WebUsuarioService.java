@@ -5,6 +5,7 @@ import com.soyowendy.ediarista.core.exceptions.UsuarioNaoEncontradoException;
 import com.soyowendy.ediarista.core.models.Usuario;
 import com.soyowendy.ediarista.core.repositories.UsuarioRepository;
 import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
+import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
 import com.soyowendy.ediarista.web.mappers.WebUsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,23 @@ public class WebUsuarioService {
 
 		return usuarioRepository.findById(id)
 				.orElseThrow(() -> new UsuarioNaoEncontradoException(mensagem));
+	}
+
+	public UsuarioEdicaoFormDTO buscarFormPorId(Long id) {
+		Usuario usuario = buscarPorId(id);
+
+		return mapper.toForm(usuario);
+	}
+
+	public Usuario editar(Long id, UsuarioEdicaoFormDTO form) {
+		Usuario usuarioEncontrado = buscarPorId(id);
+
+		Usuario model = mapper.toModel(form);
+		model.setId(usuarioEncontrado.getId());
+		model.setSenha(usuarioEncontrado.getSenha());
+		model.setTipoUsuario(usuarioEncontrado.getTipoUsuario());
+
+		return usuarioRepository.save(model);
 	}
 
 	public void excluirPorId(Long id) {
