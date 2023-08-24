@@ -1,0 +1,48 @@
+<!doctype html>
+<html th:replace="~{base :: layout(~{::title}, _, ~{::main}, _)}">
+    <head>
+        <title>Lista de Usuários</title>
+    </head>
+    <body>
+        <main>
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Lista de Usuários</div>
+                            <div class="card-tools">
+                                <a class="btn btn-sm btn-success" th:href="@{/admin/usuarios/cadastrar}">Novo Usuário</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-condensed">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nome Completo</th>
+                                    <th>E-mail</th>
+                                    <th>Ação</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="usuario : ${usuarios}">
+                                    <td th:text="${usuario.id}"></td>
+                                    <td th:text="${usuario.nomeCompleto}"></td>
+                                    <td th:text="${usuario.email}"></td>
+                                    <td>
+                                        <a th:href="@{/admin/usuarios/{id}/editar (id=${usuario.id})}" class="btn btn-sm btn-warning">Editar</a>
+                                        <a
+                                                th:href="@{/admin/usuarios/{id}/excluir (id=${usuario.id})}"
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm ('Tem certeza que deseja excluir este usuário?')">Excluir</a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
