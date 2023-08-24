@@ -2,6 +2,7 @@ package com.soyowendy.ediarista.web.services;
 
 import com.soyowendy.ediarista.core.enums.TipoUsuario;
 import com.soyowendy.ediarista.core.exceptions.SenhasNaoConferemException;
+import com.soyowendy.ediarista.core.exceptions.UsuarioJaCadastradoException;
 import com.soyowendy.ediarista.core.exceptions.UsuarioNaoEncontradoException;
 import com.soyowendy.ediarista.core.models.Usuario;
 import com.soyowendy.ediarista.core.repositories.UsuarioRepository;
@@ -46,8 +47,9 @@ public class WebUsuarioService {
 		}
 
 		Usuario model = mapper.toModel(form);
-
 		model.setTipoUsuario(TipoUsuario.ADMIN);
+
+		validarCamposUnicos(model);
 
 		return usuarioRepository.save(model);
 	}
@@ -73,6 +75,8 @@ public class WebUsuarioService {
 		model.setSenha(usuarioEncontrado.getSenha());
 		model.setTipoUsuario(usuarioEncontrado.getTipoUsuario());
 
+		validarCamposUnicos(model);
+
 		return usuarioRepository.save(model);
 	}
 
@@ -80,5 +84,24 @@ public class WebUsuarioService {
 		Usuario usuarioEncontrado = buscarPorId(id);
 
 		usuarioRepository.delete(usuarioEncontrado);
+	}
+
+	private void validarCamposUnicos(Usuario usuario) {
+		usuarioRepository.findByEmail(usuario.getEmail()).ifPresent(user -> {
+			if (!user.equals(usuario)) {
+				String mensagem = "Já existe um usuário cadastrado com esse e-mail";
+				FieldError fieldError = new FieldError(
+						usuario.getClass().getName(),
+						"email",
+						usuario.getEmail(),
+						false,
+						null,
+						null,
+						mensagem
+				);
+
+				throw new UsuarioJaCadastradoException(mensagem, fieldError);
+			}
+		});
 	}
 }

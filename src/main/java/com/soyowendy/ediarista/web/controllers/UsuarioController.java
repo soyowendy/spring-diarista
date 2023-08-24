@@ -1,6 +1,6 @@
 package com.soyowendy.ediarista.web.controllers;
 
-import com.soyowendy.ediarista.core.exceptions.SenhasNaoConferemException;
+import com.soyowendy.ediarista.core.exceptions.ValidacaoException;
 import com.soyowendy.ediarista.web.dtos.FlashMessageDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
@@ -44,7 +44,7 @@ public class UsuarioController {
 		try {
 			usuarioService.cadastrar(form);
 			attrs.addFlashAttribute("alert", new FlashMessageDTO("alert-success", "Usuário cadastrado com sucesso!"));
-		} catch(SenhasNaoConferemException e) {
+		} catch(ValidacaoException e) {
 			result.addError(e.getFieldError());
 			return "admin/usuario/cadastro-form";
 		}
@@ -68,9 +68,13 @@ public class UsuarioController {
 			return "admin/usuario/edicao-form";
 		}
 
-		usuarioService.editar(id, form);
-		attrs.addFlashAttribute("alert", new FlashMessageDTO("alert-success", "Usuário editado com sucesso!"));
-
+		try {
+			usuarioService.editar(id, form);
+			attrs.addFlashAttribute("alert", new FlashMessageDTO("alert-success", "Usuário editado com sucesso!"));
+		} catch (ValidacaoException e) {
+			result.addError(e.getFieldError());
+			return "admin/usuario/edicao-form";
+		}
 		return "redirect:/admin/usuarios";
 	}
 
