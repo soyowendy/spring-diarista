@@ -2,9 +2,8 @@ package com.soyowendy.ediarista.web.controllers;
 
 import com.soyowendy.ediarista.core.enums.Icone;
 import com.soyowendy.ediarista.core.models.Servico;
-import com.soyowendy.ediarista.core.repositories.ServicoRepository;
 import com.soyowendy.ediarista.web.dtos.ServicoFormDTO;
-import com.soyowendy.ediarista.web.mappers.WebServicoMapper;
+import com.soyowendy.ediarista.web.services.WebServicoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,10 +17,7 @@ import java.util.Optional;
 @RequestMapping("/admin/servicos")
 public class ServicoController {
 	@Autowired
-	private ServicoRepository servicoRepository;
-
-	@Autowired
-	private WebServicoMapper mapper;
+	private WebServicoService service;
 
 	@GetMapping("/cadastrar")
 	public ModelAndView cadastrar() {
@@ -36,8 +32,7 @@ public class ServicoController {
 			return "admin/servico/form";
 		}
 
-		Servico servico = mapper.toModel(form);
-		servicoRepository.save(servico);
+		Servico servico = service.cadastrar(form);
 
 		return "redirect:/admin/servicos";
 	}
@@ -46,7 +41,7 @@ public class ServicoController {
 	public ModelAndView buscarTodos() {
 		ModelAndView modelAndView = new ModelAndView("admin/servico/lista");
 
-		modelAndView.addObject("servicos", servicoRepository.findAll());
+		modelAndView.addObject("servicos", service.buscarTodos());
 
 		return modelAndView;
 	}
@@ -55,10 +50,7 @@ public class ServicoController {
 	public ModelAndView editar(@PathVariable Long id) {
 		ModelAndView modelAndView = new ModelAndView("admin/servico/form");
 
-		Optional<Servico> servico = servicoRepository.findById(id);
-		ServicoFormDTO form = mapper.toForm(servico.get());
-
-		modelAndView.addObject("form", form);
+		modelAndView.addObject("form", service.buscarPorId(id));
 
 		return modelAndView;
 	}
@@ -68,18 +60,15 @@ public class ServicoController {
 		if (result.hasErrors()) {
 			return "admin/servico/form";
 		}
-		Servico servico = mapper.toModel(form);
 
-		servico.setId(id);
-		servicoRepository.save(servico);
+		service.editar(form, id);
 
 		return "redirect:/admin/servicos";
 	}
 
 	@GetMapping("/{id}/excluir")
 	public String excluir(@PathVariable Long id) {
-		servicoRepository.deleteById(id);
-
+		service.excluirPorId(id);
 		return "redirect:/admin/servicos";
 	}
 
