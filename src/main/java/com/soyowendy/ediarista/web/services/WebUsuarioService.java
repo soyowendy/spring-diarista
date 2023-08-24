@@ -1,6 +1,7 @@
 package com.soyowendy.ediarista.web.services;
 
 import com.soyowendy.ediarista.core.enums.TipoUsuario;
+import com.soyowendy.ediarista.core.exceptions.SenhasNaoConferemException;
 import com.soyowendy.ediarista.core.exceptions.UsuarioNaoEncontradoException;
 import com.soyowendy.ediarista.core.models.Usuario;
 import com.soyowendy.ediarista.core.repositories.UsuarioRepository;
@@ -9,6 +10,7 @@ import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
 import com.soyowendy.ediarista.web.mappers.WebUsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.FieldError;
 
 import java.util.List;
 
@@ -25,6 +27,24 @@ public class WebUsuarioService {
 	}
 
 	public Usuario cadastrar(UsuarioCadastroFormDTO form) {
+		String senha = form.getSenha();
+		String confirmacaoSenha = form.getConfirmacaoSenha();
+
+		if (!senha.equals(confirmacaoSenha)) {
+			String mensagem = "Os campos de senha não conferem";
+			FieldError fieldError = new FieldError(
+					form.getClass().getName(),
+					"confirmacaoSenha",
+					form.getConfirmacaoSenha(),
+					false,
+					null,
+					null,
+					mensagem
+			);
+
+			throw new SenhasNaoConferemException(mensagem, fieldError);
+		}
+
 		Usuario model = mapper.toModel(form);
 
 		model.setTipoUsuario(TipoUsuario.ADMIN);
