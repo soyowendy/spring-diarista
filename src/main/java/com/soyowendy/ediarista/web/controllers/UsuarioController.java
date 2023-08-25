@@ -1,6 +1,7 @@
 package com.soyowendy.ediarista.web.controllers;
 
 import com.soyowendy.ediarista.core.exceptions.ValidacaoException;
+import com.soyowendy.ediarista.web.dtos.AlterarSenhaFormDTO;
 import com.soyowendy.ediarista.web.dtos.FlashMessageDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
@@ -12,6 +13,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Principal;
 
 @Controller
 @RequestMapping("/admin/usuarios")
@@ -85,5 +88,29 @@ public class UsuarioController {
 		return "redirect:/admin/usuarios";
 	}
 
+	@GetMapping("/alterar-senha")
+	public ModelAndView alterarSenha() {
+		ModelAndView modelAndView = new ModelAndView("admin/usuario/alterar-senha");
+		modelAndView.addObject("alterarSenhaForm", new AlterarSenhaFormDTO());
+		return modelAndView;
+	}
 
+	@PostMapping("/alterar-senha")
+	public String alterarSenha(@Valid @ModelAttribute("alterarSenhaForm") AlterarSenhaFormDTO form,
+	                           BindingResult result,
+	                           RedirectAttributes attrs,
+	                           Principal principal) {
+		if (result.hasErrors()) {
+			return "/admin/usuario/alterar-senha";
+		}
+
+		try {
+			usuarioService.alterarSenha(form, principal.getName());
+			attrs.addFlashAttribute("alert", new FlashMessageDTO("alert-success", "Senha alterada com sucesso!"));
+		} catch (ValidacaoException e) {
+			result.addError(e.getFieldError());
+			return "/admin/usuario/alterar-senha";
+		}
+		return "redirect:/admin/usuarios/alterar-senha";
+	}
 }

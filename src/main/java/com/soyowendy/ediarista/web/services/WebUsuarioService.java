@@ -1,16 +1,17 @@
 package com.soyowendy.ediarista.web.services;
 
 import com.soyowendy.ediarista.core.enums.TipoUsuario;
+import com.soyowendy.ediarista.core.exceptions.SenhaIncorretaException;
 import com.soyowendy.ediarista.core.exceptions.SenhasNaoConferemException;
 import com.soyowendy.ediarista.core.exceptions.UsuarioJaCadastradoException;
 import com.soyowendy.ediarista.core.exceptions.UsuarioNaoEncontradoException;
 import com.soyowendy.ediarista.core.models.Usuario;
 import com.soyowendy.ediarista.core.repositories.UsuarioRepository;
+import com.soyowendy.ediarista.web.dtos.AlterarSenhaFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
 import com.soyowendy.ediarista.web.mappers.WebUsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.FieldError;
@@ -68,6 +69,13 @@ public class WebUsuarioService {
 				.orElseThrow(() -> new UsuarioNaoEncontradoException(mensagem));
 	}
 
+	public Usuario buscarPorEmail(String email) {
+		String mensagem = String.format("Usuário com email %s não encontrado", email);
+
+		return usuarioRepository.findByEmail(email)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException(mensagem));
+	}
+
 	public UsuarioEdicaoFormDTO buscarFormPorId(Long id) {
 		Usuario usuario = buscarPorId(id);
 
@@ -91,6 +99,50 @@ public class WebUsuarioService {
 		Usuario usuarioEncontrado = buscarPorId(id);
 
 		usuarioRepository.delete(usuarioEncontrado);
+	}
+
+	public void alterarSenha(AlterarSenhaFormDTO form, String email) {
+		Usuario usuario = buscarPorEmail(email);
+
+		String senhaAtual = usuario.getSenha();
+		String senhaAntiga = form.getSenhaAntiga();
+		String senha = form.getSenha();
+		String confirmacaoSenha = form.getConfirmacaoSenha();
+
+		if (!senha.equals(confirmacaoSenha)) {
+			String mensagem = "Os campos de senha não conferem";
+			FieldError fieldError = new FieldError(
+					form.getClass().getName(),
+					"confirmacaoSenha",
+					form.getConfirmacaoSenha(),
+					false,
+					null,
+					null,
+					mensagem
+			);
+
+			throw new SenhasNaoConferemException(mensagem, fieldError);
+		}
+
+		if (!passwordEncoder.matches(senhaAntiga, senhaAtual)) {
+			String mensagem = "Senha antiga está incorreta";
+			FieldError fieldError = new FieldError(
+					form.getClass().getName(),
+					"senhaAntiga",
+					senhaAntiga,
+					false,
+					null,
+					null,
+					mensagem
+			);
+
+			throw new SenhaIncorretaException(mensagem, fieldError);
+		}
+
+		String novaSenhaHash = passwordEncoder.encode(senha);
+		usuario.setSenha(novaSenhaHash);
+
+		usuarioRepository.save(usuario);
 	}
 
 	private void validarCamposUnicos(Usuario usuario) {
