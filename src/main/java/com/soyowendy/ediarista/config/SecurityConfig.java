@@ -27,7 +27,7 @@ public class SecurityConfig  {
 					form.loginPage("/admin/login").permitAll().usernameParameter("email").passwordParameter("senha")
 							.defaultSuccessUrl("/admin/servicos"))
 			.logout((logout) ->
-					logout.logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout", "GET")))
+					logout.logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout", "GET")).logoutSuccessUrl("/admin/login"))
 			.rememberMe((remember) ->
 					remember.tokenValiditySeconds(rememberMeValiditySeconds).key(rememberMeKey).rememberMeParameter("lembrar"));
 		return http.build();
