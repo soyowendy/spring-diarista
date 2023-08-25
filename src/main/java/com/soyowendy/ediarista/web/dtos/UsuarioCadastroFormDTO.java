@@ -1,5 +1,6 @@
 package com.soyowendy.ediarista.web.dtos;
 
+import com.soyowendy.ediarista.web.interfaces.IConfirmacaoSenha;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioCadastroFormDTO {
+public class UsuarioCadastroFormDTO implements IConfirmacaoSenha {
 	@NotNull
 	@Size(min = 3, max = 255)
 	private String nomeCompleto;

@@ -10,6 +10,7 @@ import com.soyowendy.ediarista.core.repositories.UsuarioRepository;
 import com.soyowendy.ediarista.web.dtos.AlterarSenhaFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioCadastroFormDTO;
 import com.soyowendy.ediarista.web.dtos.UsuarioEdicaoFormDTO;
+import com.soyowendy.ediarista.web.interfaces.IConfirmacaoSenha;
 import com.soyowendy.ediarista.web.mappers.WebUsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,23 +33,7 @@ public class WebUsuarioService {
 	}
 
 	public Usuario cadastrar(UsuarioCadastroFormDTO form) {
-		String senha = form.getSenha();
-		String confirmacaoSenha = form.getConfirmacaoSenha();
-
-		if (!senha.equals(confirmacaoSenha)) {
-			String mensagem = "Os campos de senha não conferem";
-			FieldError fieldError = new FieldError(
-					form.getClass().getName(),
-					"confirmacaoSenha",
-					form.getConfirmacaoSenha(),
-					false,
-					null,
-					null,
-					mensagem
-			);
-
-			throw new SenhasNaoConferemException(mensagem, fieldError);
-		}
+		validarConfirmacaoSenha(form);
 
 		Usuario model = mapper.toModel(form);
 
@@ -104,25 +89,12 @@ public class WebUsuarioService {
 	public void alterarSenha(AlterarSenhaFormDTO form, String email) {
 		Usuario usuario = buscarPorEmail(email);
 
+		validarConfirmacaoSenha(form);
+
 		String senhaAtual = usuario.getSenha();
 		String senhaAntiga = form.getSenhaAntiga();
 		String senha = form.getSenha();
-		String confirmacaoSenha = form.getConfirmacaoSenha();
 
-		if (!senha.equals(confirmacaoSenha)) {
-			String mensagem = "Os campos de senha não conferem";
-			FieldError fieldError = new FieldError(
-					form.getClass().getName(),
-					"confirmacaoSenha",
-					form.getConfirmacaoSenha(),
-					false,
-					null,
-					null,
-					mensagem
-			);
-
-			throw new SenhasNaoConferemException(mensagem, fieldError);
-		}
 
 		if (!passwordEncoder.matches(senhaAntiga, senhaAtual)) {
 			String mensagem = "Senha antiga está incorreta";
@@ -143,6 +115,27 @@ public class WebUsuarioService {
 		usuario.setSenha(novaSenhaHash);
 
 		usuarioRepository.save(usuario);
+	}
+
+	private void validarConfirmacaoSenha(IConfirmacaoSenha confirmacao) {
+		String senha = confirmacao.getSenha();
+		String confirmacaoSenha = confirmacao.getConfirmacaoSenha();
+
+		if (!senha.equals(confirmacaoSenha)) {
+			String mensagem = "Os campos de senha não conferem";
+			FieldError fieldError = new FieldError(
+					confirmacao.getClass().getName(),
+					"confirmacaoSenha",
+					confirmacao.getConfirmacaoSenha(),
+					false,
+					null,
+					null,
+					mensagem
+			);
+
+			throw new SenhasNaoConferemException(mensagem, fieldError);
+		}
+
 	}
 
 	private void validarCamposUnicos(Usuario usuario) {
